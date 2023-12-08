@@ -21,7 +21,7 @@ jobs:
       - name: Setup Micromamba
         uses: mamba-org/setup-micromamba@v1.7.0
         with:
-          micromamba-version: '1.5.3'
+          micromamba-version: '1.5.3-0'
           environment-file: env.yml
           environment-name: ${{ steps.payu.outputs.name }}
           generate-run-shell: true
