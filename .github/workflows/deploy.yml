@@ -21,24 +21,17 @@ jobs:
       - name: Setup Micromamba
         uses: mamba-org/setup-micromamba@v1.7.0
         with:
-          micromamba-version: '1.5.3'
+          micromamba-version: '1.5.3-0'
           environment-file: env.yml
           environment-name: ${{ steps.payu.outputs.name }}
           generate-run-shell: true
 
-      - name: Freeze Dependencies
-        shell: micromamba-shell {0}
-        run: micromamba env export > ${{ steps.payu.outputs.name }}.yml
-
-      - name: Install Conda Pack and Lock
-        shell: micromamba-shell {0}
-        run: micromamba install -c conda-forge conda-pack conda-lock
-
       - name: Create Pack and Lockfile
         shell: micromamba-shell {0}
+        # TODO: tried with `-f env.yml` and it failed because it couldn't find any of the channels, but it got further than without the `-f`
         run: |
           conda pack
-          conda-lock --lockfile ${{ steps.payu.outputs.name }}.conda-lock.yml
+          conda-lock lock --micromamba --lockfile ${{ steps.payu.outputs.name }}.conda-lock.yml
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
