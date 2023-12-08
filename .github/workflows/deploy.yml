@@ -1,0 +1,61 @@
+name: Deploy
+on:
+  # TODO: Determine the best trigger for deployment later
+  # For now, assume that the conda channel has been updated with a new, undeployed version of payu
+  workflow_dispatch:
+jobs:
+  pack:
+    name: Pack Payu
+    runs-on: ubuntu-latest
+    # output: upload pack.tar.gz for later jobs
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get Payu Version
+        id: payu
+        run: |
+          VERSION=$(yq eval '.dependencies[] | select(contains("accessnri::payu")) | split("==") | .[1]' env.yml)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "name=payu-$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Setup Micromamba
+        uses: mamba-org/setup-micromamba@v1.7.0
+        with:
+          micromamba-version: '1.5.3'
+          environment-file: env.yml
+          environment-name: ${{ steps.payu.outputs.name }}
+          generate-run-shell: true
+
+      - name: Freeze Dependencies
+        shell: micromamba-shell {0}
+        run: micromamba env export > ${{ steps.payu.outputs.name }}.yml
+
+      - name: Install Conda Pack and Lock
+        shell: micromamba-shell {0}
+        run: micromamba install -c conda-forge conda-pack conda-lock
+
+      - name: Create Pack and Lockfile
+        shell: micromamba-shell {0}
+        run: |
+          conda pack
+          conda-lock --lockfile ${{ steps.payu.outputs.name }}.conda-lock.yml
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.payu.outputs.name }}
+          if-no-files-found: error
+          path: |
+            ${{ steps.payu.outputs.name }}.tar.gz
+            ${{ steps.payu.outputs.name }}.conda-lock.yml
+
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - pack
+
+  # release:
+  #   # don't forget to upload the conda.lock file!
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - deploy
