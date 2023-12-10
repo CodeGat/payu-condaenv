@@ -29,9 +29,8 @@ jobs:
       - name: Create Pack and Lockfile
         shell: micromamba-shell {0}
         run: |
-          pwd
           conda pack
-          conda-lock lock --lockfile ${{ steps.payu.outputs.name }}.conda-lock.yml
+          conda-lock lock --file env.yml --lockfile ${{ steps.payu.outputs.name }}.conda-lock.yml
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
