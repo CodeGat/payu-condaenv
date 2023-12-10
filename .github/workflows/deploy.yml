@@ -31,7 +31,7 @@ jobs:
         # TODO: tried with `-f env.yml` and it failed because it couldn't find any of the channels, but it got further than without the `-f`
         run: |
           conda pack
-          conda-lock lock --micromamba --lockfile ${{ steps.payu.outputs.name }}.conda-lock.yml
+          conda-lock lock --file env.yml --platform linux-64 --micromamba --lockfile ${{ steps.payu.outputs.name }}.conda-lock.yml
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
@@ -42,13 +42,13 @@ jobs:
             ${{ steps.payu.outputs.name }}.tar.gz
             ${{ steps.payu.outputs.name }}.conda-lock.yml
 
-  # deploy:
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - pack
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - pack
 
-  # release:
-  #   # don't forget to upload the conda.lock file!
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - deploy
+  release:
+    # don't forget to upload the conda.lock file!
+    runs-on: ubuntu-latest
+    needs:
+      - deploy
