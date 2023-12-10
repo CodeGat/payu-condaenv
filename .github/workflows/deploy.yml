@@ -30,7 +30,7 @@ jobs:
         shell: micromamba-shell {0}
         run: |
           conda pack
-          conda-lock lock --file env.yml --lockfile ${{ steps.payu.outputs.name }}.conda-lock.yml
+          conda-lock lock --file env.yml --platform linux-64 --lockfile ${{ steps.payu.outputs.name }}.conda-lock.yml
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
